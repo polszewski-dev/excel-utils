@@ -18,7 +18,8 @@ public class ExcelWriter {
 	private Workbook workbook;
 	private Sheet sheet;
 	private Row row;
-	private int rowIdx, colIdx;
+	private int rowIdx;
+	private int colIdx;
 	private Map<Style, CellStyle> styleMap = new HashMap<>();
 	private Map<polszewski.excel.writer.style.Font, Font> fontMap = new HashMap<>();
 	private DataFormat dataFormat;
@@ -30,10 +31,10 @@ public class ExcelWriter {
 
 	public void save(String filePath) throws IOException {
 		try {
-			FileOutputStream fileOut = new FileOutputStream(filePath);
-			workbook.write(fileOut);
-			workbook.close();
-			fileOut.close();
+			try (FileOutputStream fileOut = new FileOutputStream(filePath)) {
+				workbook.write(fileOut);
+				workbook.close();
+			}
 		} finally {
 			this.dataFormat = null;
 			this.styleMap.clear();
@@ -106,7 +107,6 @@ public class ExcelWriter {
 			return cellStyle;
 		}
 		cellStyle = workbook.createCellStyle();
-		//TODO cellStyle.setFont(null);
 		if (style.getAlignment() != null) {
 			cellStyle.setAlignment(style.getAlignment());
 		}
@@ -136,11 +136,20 @@ public class ExcelWriter {
 			return xlsFont;
 		}
 		xlsFont = workbook.createFont();
+		if (font.getName() != null) {
+			xlsFont.setFontName(font.getName());
+		}
+		if (font.getSize() != null) {
+			xlsFont.setFontHeightInPoints(font.getSize().shortValue());
+		}
 		if (font.getColor() != null) {
 			xlsFont.setColor(font.getColor().getIndex());
 		}
 		if (font.getBold() != null) {
 			xlsFont.setBold(font.getBold());
+		}
+		if (font.getItalic() != null) {
+			xlsFont.setItalic(font.getItalic());
 		}
 		return xlsFont;
 	}

@@ -39,8 +39,8 @@ public abstract class SimpleHeaderExcelReaderTemplate<T> {
 		return read(getClass().getResourceAsStream(path));
 	}
 
-	private List<T> readHelper(PoiExcelReader excelReader1) throws IOException {
-		try (ExcelReader excelReader = excelReader1) {
+	private List<T> readHelper(PoiExcelReader excelReader) throws IOException {
+		try (ExcelReader newExcelReader = excelReader) {
 			this.excelReader = excelReader;
 
 			List<T> result = new ArrayList<>();
@@ -54,10 +54,10 @@ public abstract class SimpleHeaderExcelReaderTemplate<T> {
 					header = parseHeader();
 
 					while (excelReader.nextRow()) {
-						T record = readRecord(excelReader);
+						T xlsRecord = readRecord(excelReader);
 
-						if (record != null) {
-							result.add(record);
+						if (xlsRecord != null) {
+							result.add(xlsRecord);
 						}
 					}
 				}
@@ -110,7 +110,7 @@ public abstract class SimpleHeaderExcelReaderTemplate<T> {
 
 	public boolean getBooleanFalseOnNull(String name) {
 		Boolean result = getBoolean(name);
-		return result != null ? result : false;
+		return result == Boolean.TRUE;
 	}
 
 	public Integer getInteger(String name) {
@@ -131,12 +131,12 @@ public abstract class SimpleHeaderExcelReaderTemplate<T> {
 		return Arrays.asList(value.split(Pattern.quote(separator)));
 	}
 
-	public <T> List<T> getList(String name, String separator, Function<String, T> converter) {
+	public <E> List<E> getList(String name, String separator, Function<String, E> converter) {
 		List<String> stringList = getStringList(name, separator);
 		if (stringList.isEmpty()) {
 			return Collections.emptyList();
 		}
-		List<T> result = new ArrayList<>(stringList.size());
+		List<E> result = new ArrayList<>(stringList.size());
 		for (String s : stringList) {
 			result.add(converter.apply(s));
 		}
