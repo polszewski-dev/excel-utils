@@ -24,6 +24,11 @@ public class ExcelWriter {
 	private Map<polszewski.excel.writer.style.Font, Font> fontMap = new HashMap<>();
 	private DataFormat dataFormat;
 
+	public ExcelWriter open() {
+		workbook = new HSSFWorkbook();
+		return this;
+	}
+
 	public ExcelWriter open(String sheetName) {
 		workbook = new HSSFWorkbook();
 		return nextSheet(sheetName);
