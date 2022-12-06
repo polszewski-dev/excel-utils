@@ -81,12 +81,24 @@ public abstract class ExcelSheetParser {
 			return getOptionalInteger().orElseThrow(this::columnIsEmpty);
 		}
 
+		public Integer getNullableInteger() {
+			return getOptionalString()
+					.map(Integer::valueOf)
+					.orElse(null);
+		}
+
 		public double getDouble(double defaultValue) {
 			return getOptionalDouble().orElse(defaultValue);
 		}
 
 		public double getDouble() {
 			return getOptionalDouble().orElseThrow(this::columnIsEmpty);
+		}
+
+		public Double getNullableDouble() {
+			return getOptionalString()
+					.map(Double::valueOf)
+					.orElse(null);
 		}
 
 		public boolean getBoolean() {
@@ -167,7 +179,7 @@ public abstract class ExcelSheetParser {
 		}
 
 		protected IllegalArgumentException columnIsEmpty() {
-			return new IllegalArgumentException("Column '" + name + "' is empty");
+			return new IllegalArgumentException(String.format("%s[%s]: column '%s' is empty", excelReader.getCurrentSheetName(), excelReader.getCurrentRowIdx() + 1, name));
 		}
 	}
 }
