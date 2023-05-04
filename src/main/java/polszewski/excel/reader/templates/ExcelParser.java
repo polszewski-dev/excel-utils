@@ -37,7 +37,7 @@ public abstract class ExcelParser {
 
 	private ExcelSheetParser getSheetParser(ExcelReader excelReader) {
 		return getSheetParsers()
-				.filter(parser -> parser.sheetName.equals(excelReader.getCurrentSheetName()))
+				.filter(parser -> parser.matchesSheetName(excelReader))
 				.findFirst()
 				.orElseThrow(() -> new IllegalArgumentException("Unknown sheet: " + excelReader.getCurrentSheetName()));
 	}

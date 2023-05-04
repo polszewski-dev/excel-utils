@@ -4,6 +4,7 @@ import polszewski.excel.reader.ExcelReader;
 
 import java.util.*;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -13,13 +14,21 @@ import java.util.stream.Stream;
  * Date: 2022-11-22
  */
 public abstract class ExcelSheetParser {
-	protected final String sheetName;
+	protected final Pattern sheetNamePattern;
 
 	protected ExcelReader excelReader;
 	protected Map<String, Integer> header;
 
 	protected ExcelSheetParser(String sheetName) {
-		this.sheetName = sheetName;
+		this(Pattern.compile("^" + Pattern.quote(sheetName) + "$"));
+	}
+
+	protected ExcelSheetParser(Pattern sheetNamePattern) {
+		this.sheetNamePattern = sheetNamePattern;
+	}
+
+	public boolean matchesSheetName(ExcelReader excelReader) {
+		return this.sheetNamePattern.matcher(excelReader.getCurrentSheetName()).find();
 	}
 
 	public void init(ExcelReader excelReader, Map<String, Integer> header) {

@@ -6,12 +6,12 @@
 
 	<groupId>polszewski</groupId>
 	<artifactId>excel-utils</artifactId>
-	<version>1.5</version>
+	<version>1.6</version>
 	<packaging>jar</packaging>
 
 	<properties>
-		<maven.compiler.source>8</maven.compiler.source>
-		<maven.compiler.target>8</maven.compiler.target>
+		<maven.compiler.source>17</maven.compiler.source>
+		<maven.compiler.target>17</maven.compiler.target>
 		<poi.version>3.11</poi.version>
 	</properties>
 
