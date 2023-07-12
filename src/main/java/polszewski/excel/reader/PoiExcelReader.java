@@ -1,6 +1,5 @@
 package polszewski.excel.reader;
 
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.*;
 
 import java.io.File;
@@ -25,11 +24,11 @@ public class PoiExcelReader implements ExcelReader {
 		this.workbook = workbook;
 	}
 
-	public PoiExcelReader(File file) throws IOException, InvalidFormatException {
+	public PoiExcelReader(File file) throws IOException {
 		this(WorkbookFactory.create(file));
 	}
 
-	public PoiExcelReader(InputStream inputStream) throws IOException, InvalidFormatException {
+	public PoiExcelReader(InputStream inputStream) throws IOException {
 		this(WorkbookFactory.create(inputStream));
 	}
 
@@ -111,20 +110,13 @@ public class PoiExcelReader implements ExcelReader {
 		if (cell == null) {
 			return null;
 		}
-		switch (cell.getCellType()) {
-			case Cell.CELL_TYPE_NUMERIC:
-				return numericCellToString(cell);
-			case Cell.CELL_TYPE_STRING:
-				return cell.getStringCellValue().trim();
-			case Cell.CELL_TYPE_BOOLEAN:
-				return String.valueOf(cell.getBooleanCellValue());
-			case Cell.CELL_TYPE_BLANK:
-				return null;
-			case Cell.CELL_TYPE_FORMULA:
-				return formulaCellToString(cell);
-			default:
-				return null;
-		}
+		return switch (cell.getCellType()) {
+			case NUMERIC -> numericCellToString(cell);
+			case STRING -> cell.getStringCellValue().trim();
+			case BOOLEAN -> String.valueOf(cell.getBooleanCellValue());
+			case FORMULA -> formulaCellToString(cell);
+			default -> null;
+		};
 	}
 
 	private static String numericCellToString(Cell cell) {

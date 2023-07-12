@@ -30,13 +30,12 @@ public class ExcelWriter {
 	}
 
 	public ExcelWriter open(String sheetName) {
-		workbook = new HSSFWorkbook();
-		return nextSheet(sheetName);
+		return open().nextSheet(sheetName);
 	}
 
 	public void save(String filePath) throws IOException {
 		try {
-			try (FileOutputStream fileOut = new FileOutputStream(filePath)) {
+			try (var fileOut = new FileOutputStream(filePath)) {
 				workbook.write(fileOut);
 				workbook.close();
 			}
@@ -112,24 +111,24 @@ public class ExcelWriter {
 			return cellStyle;
 		}
 		cellStyle = workbook.createCellStyle();
-		if (style.getAlignment() != null) {
-			cellStyle.setAlignment(style.getAlignment());
+		if (style.alignment() != null) {
+			cellStyle.setAlignment(style.alignment());
 		}
-		if (style.getVerticalAlignment() != null) {
-			cellStyle.setVerticalAlignment(style.getVerticalAlignment());
+		if (style.verticalAlignment() != null) {
+			cellStyle.setVerticalAlignment(style.verticalAlignment());
 		}
-		if (style.getBackgroundColor() != null) {
-			cellStyle.setFillPattern(CellStyle.SOLID_FOREGROUND);
-			cellStyle.setFillForegroundColor(style.getBackgroundColor().getIndex());
+		if (style.backgroundColor() != null) {
+			cellStyle.setFillPattern(FillPatternType.SOLID_FOREGROUND);
+			cellStyle.setFillForegroundColor(style.backgroundColor().getIndex());
 		}
-		if (style.getFont() != null) {
-			cellStyle.setFont(getFont(style.getFont()));
+		if (style.font() != null) {
+			cellStyle.setFont(getFont(style.font()));
 		}
-		if (style.getFormat() != null) {
+		if (style.format() != null) {
 			if (dataFormat == null) {
 				this.dataFormat = workbook.createDataFormat();
 			}
-			cellStyle.setDataFormat(dataFormat.getFormat(style.getFormat()));
+			cellStyle.setDataFormat(dataFormat.getFormat(style.format()));
 		}
 		styleMap.put(style, cellStyle);
 		return cellStyle;
@@ -141,21 +140,22 @@ public class ExcelWriter {
 			return xlsFont;
 		}
 		xlsFont = workbook.createFont();
-		if (font.getName() != null) {
-			xlsFont.setFontName(font.getName());
+		if (font.name() != null) {
+			xlsFont.setFontName(font.name());
 		}
-		if (font.getSize() != null) {
-			xlsFont.setFontHeightInPoints(font.getSize().shortValue());
+		if (font.size() != null) {
+			xlsFont.setFontHeightInPoints(font.size().shortValue());
 		}
-		if (font.getColor() != null) {
-			xlsFont.setColor(font.getColor().getIndex());
+		if (font.color() != null) {
+			xlsFont.setColor(font.color().getIndex());
 		}
-		if (font.getBold() != null) {
-			xlsFont.setBold(font.getBold());
+		if (font.bold() != null) {
+			xlsFont.setBold(font.bold());
 		}
-		if (font.getItalic() != null) {
-			xlsFont.setItalic(font.getItalic());
+		if (font.italic() != null) {
+			xlsFont.setItalic(font.italic());
 		}
+		fontMap.put(font, xlsFont);
 		return xlsFont;
 	}
 

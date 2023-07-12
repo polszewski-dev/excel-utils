@@ -1,6 +1,5 @@
 package polszewski.excel.reader.templates;
 
-import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import polszewski.excel.reader.ExcelReader;
 import polszewski.excel.reader.PoiExcelReader;
 
@@ -18,8 +17,8 @@ public abstract class ExcelParser {
 	protected ExcelReader excelReader;
 	protected Map<String, Integer> header;
 
-	public final void readFromXls() throws IOException, InvalidFormatException {
-		try (ExcelReader newExcelReader = new PoiExcelReader(getExcelInputStream())) {
+	public final void readFromXls() throws IOException {
+		try (var newExcelReader = new PoiExcelReader(getExcelInputStream())) {
 			this.excelReader = newExcelReader;
 			while (excelReader.nextSheet()) {
 				if (excelReader.nextRow()) {
@@ -42,7 +41,7 @@ public abstract class ExcelParser {
 				.orElseThrow(() -> new IllegalArgumentException("Unknown sheet: " + excelReader.getCurrentSheetName()));
 	}
 
-	protected abstract InputStream getExcelInputStream();
+	protected abstract InputStream getExcelInputStream() throws IOException;
 
 	protected abstract Stream<ExcelSheetParser> getSheetParsers();
 
@@ -51,7 +50,7 @@ public abstract class ExcelParser {
 	}
 
 	private Map<String, Integer> getHeader() {
-		Map<String, Integer> result = new LinkedHashMap<>();
+		var result = new LinkedHashMap<String, Integer>();
 
 		while (excelReader.nextCell()) {
 			String value = excelReader.getCurrentCellStringValue();

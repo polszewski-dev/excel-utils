@@ -28,7 +28,7 @@ public abstract class ExcelSheetParser {
 	}
 
 	public boolean matchesSheetName(ExcelReader excelReader) {
-		return this.sheetNamePattern.matcher(excelReader.getCurrentSheetName()).find();
+		return this.sheetNamePattern.matcher(excelReader.getCurrentSheetName()).matches();
 	}
 
 	public void init(ExcelReader excelReader, Map<String, Integer> header) {
@@ -48,6 +48,20 @@ public abstract class ExcelSheetParser {
 	protected abstract ExcelColumn getColumnIndicatingOptionalRow();
 
 	protected abstract void readSingleRow();
+
+	protected String getCurrentSheetName() {
+		return excelReader.getCurrentSheetName();
+	}
+
+	protected int getCurrentRowIdx() {
+		return excelReader.getCurrentRowIdx();
+	}
+
+	protected List<String> getColumnNames(String regex) {
+		return header.keySet().stream()
+				.filter(x -> x.matches(regex))
+				.toList();
+	}
 
 	protected ExcelColumn column(String name, boolean optional) {
 		return new ExcelColumn(name, optional);
@@ -137,7 +151,7 @@ public abstract class ExcelSheetParser {
 		}
 
 		public <T> List<T> getList(Function<String, T> producer, String separator) {
-			return getValues(producer, separator, Collectors.toList());
+			return getValues(producer, separator, Collectors.toUnmodifiableList());
 		}
 
 		public <T> Set<T> getSet(Function<String, T> producer) {
@@ -145,11 +159,7 @@ public abstract class ExcelSheetParser {
 		}
 
 		public <T> Set<T> getSet(Function<String, T> producer, String separator) {
-			return getValues(producer, separator, Collectors.toSet());
-		}
-
-		public ExcelColumn multi(int index) {
-			return new ExcelColumn(name + index, optional);
+			return getValues(producer, separator, Collectors.toUnmodifiableSet());
 		}
 
 		protected Optional<String> getOptionalString() {
@@ -188,7 +198,9 @@ public abstract class ExcelSheetParser {
 		}
 
 		protected IllegalArgumentException columnIsEmpty() {
-			return new IllegalArgumentException(String.format("%s[%s]: column '%s' is empty", excelReader.getCurrentSheetName(), excelReader.getCurrentRowIdx() + 1, name));
+			return new IllegalArgumentException(
+					"%s[%s]: column '%s' is empty".formatted(getCurrentSheetName(), getCurrentRowIdx() + 1, name)
+			);
 		}
 	}
 }
