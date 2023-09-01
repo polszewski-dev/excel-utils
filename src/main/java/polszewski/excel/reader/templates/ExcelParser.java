@@ -5,8 +5,7 @@ import polszewski.excel.reader.PoiExcelReader;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.LinkedHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Stream;
 
 /**
@@ -20,25 +19,68 @@ public abstract class ExcelParser {
 	public final void readFromXls() throws IOException {
 		try (var newExcelReader = new PoiExcelReader(getExcelInputStream())) {
 			this.excelReader = newExcelReader;
-			while (excelReader.nextSheet()) {
-				if (excelReader.nextRow()) {
-					this.header = getHeader();
-					ExcelSheetParser sheetParser = getSheetParser(excelReader);
-					sheetParser.init(excelReader, header);
-					sheetParser.readSheet();
-				}
-			}
+			iterateSheetsAccordingToParserOrder();
 		} finally {
 			this.excelReader = null;
 			this.header = null;
 		}
 	}
 
-	private ExcelSheetParser getSheetParser(ExcelReader excelReader) {
-		return getSheetParsers()
-				.filter(parser -> parser.matchesSheetName(excelReader))
-				.findFirst()
-				.orElseThrow(() -> new IllegalArgumentException("Unknown sheet: " + excelReader.getCurrentSheetName()));
+	private void iterateSheetsAccordingToParserOrder() {
+		var parserToSheets = getParserToSheetMap();
+
+		for (var entry : parserToSheets.entrySet()) {
+			var sheetParser = entry.getKey();
+			var sheetNames = entry.getValue();
+
+			for (String sheetName : sheetNames) {
+				excelReader.goToSheet(sheetName);
+				readSheet(sheetParser);
+			}
+		}
+	}
+
+	private void readSheet(ExcelSheetParser sheetParser) {
+		if (excelReader.nextRow()) {
+			this.header = getHeader();
+			sheetParser.init(excelReader, header);
+			sheetParser.readSheet();
+		}
+	}
+
+	private Map<ExcelSheetParser, List<String>> getParserToSheetMap() {
+		var sheetNames = new LinkedHashSet<>(excelReader.getSheetNames());
+		var sheetParsers = getSheetParsers().toList();
+		var parserToSheets = new LinkedHashMap<ExcelSheetParser, List<String>>();
+
+		for (var sheetParser : sheetParsers) {
+			for (var iterator = sheetNames.iterator(); iterator.hasNext(); ) {
+				String sheetName = iterator.next();
+				if (sheetParser.matchesSheetName(sheetName)) {
+					parserToSheets.computeIfAbsent(sheetParser, x -> new ArrayList<>()).add(sheetName);
+					iterator.remove();
+				}
+			}
+		}
+
+		assertAllSheetsHaveParser(sheetNames);
+		assertAllParserHaveSheets(sheetParsers, parserToSheets);
+
+		return parserToSheets;
+	}
+
+	private void assertAllParserHaveSheets(List<ExcelSheetParser> sheetParsers, Map<ExcelSheetParser, List<String>> parserToSheets) {
+		if (parserToSheets.size() != sheetParsers.size()) {
+			var copy = new ArrayList<>(sheetParsers);
+			copy.removeAll(parserToSheets.keySet());
+			throw new IllegalArgumentException("Couldn't find matching sheets for parsers: " + copy);
+		}
+	}
+
+	private void assertAllSheetsHaveParser(Set<String> sheetNames) {
+		if (!sheetNames.isEmpty()) {
+			throw new IllegalArgumentException("Couldn't find matching parsers for sheets: " + String.join(", ", sheetNames));
+		}
 	}
 
 	protected abstract InputStream getExcelInputStream() throws IOException;

@@ -6,6 +6,8 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Iterator;
+import java.util.List;
+import java.util.stream.IntStream;
 
 /**
  * User: POlszewski
@@ -38,11 +40,21 @@ public class PoiExcelReader implements ExcelReader {
 	}
 
 	@Override
+	public List<String> getSheetNames() {
+		return IntStream.range(0, workbook.getNumberOfSheets())
+				.mapToObj(workbook::getSheetName)
+				.toList();
+	}
+
+	@Override
+	public void goToSheet(String sheetName) {
+		beforeSheetChange();
+		currentSheet = workbook.getSheet(sheetName);
+	}
+
+	@Override
 	public boolean nextSheet() {
-		rowIterator = null;
-		currentRow = null;
-		cellIterator = null;
-		currentCell = null;
+		beforeSheetChange();
 
 		if (sheetNo < workbook.getNumberOfSheets()) {
 			currentSheet = workbook.getSheetAt(sheetNo);
@@ -50,6 +62,13 @@ public class PoiExcelReader implements ExcelReader {
 			return true;
 		}
 		return false;
+	}
+
+	private void beforeSheetChange() {
+		rowIterator = null;
+		currentRow = null;
+		cellIterator = null;
+		currentCell = null;
 	}
 
 	@Override

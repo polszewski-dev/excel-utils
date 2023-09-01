@@ -27,8 +27,12 @@ public abstract class ExcelSheetParser {
 		this.sheetNamePattern = sheetNamePattern;
 	}
 
-	public boolean matchesSheetName(ExcelReader excelReader) {
-		return this.sheetNamePattern.matcher(excelReader.getCurrentSheetName()).matches();
+	public boolean matchesCurrentSheetName(ExcelReader excelReader) {
+		return matchesSheetName(excelReader.getCurrentSheetName());
+	}
+
+	public boolean matchesSheetName(String sheetName) {
+		return this.sheetNamePattern.matcher(sheetName).matches();
 	}
 
 	public void init(ExcelReader excelReader, Map<String, Integer> header) {
@@ -202,5 +206,10 @@ public abstract class ExcelSheetParser {
 					"%s[%s]: column '%s' is empty".formatted(getCurrentSheetName(), getCurrentRowIdx() + 1, name)
 			);
 		}
+	}
+
+	@Override
+	public String toString() {
+		return sheetNamePattern.toString();
 	}
 }
