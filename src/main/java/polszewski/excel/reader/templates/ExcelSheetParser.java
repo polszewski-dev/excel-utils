@@ -43,7 +43,7 @@ public abstract class ExcelSheetParser {
 	public void readSheet() {
 		ExcelColumn columnIndicatingOptionalRow = getColumnIndicatingOptionalRow();
 		while (excelReader.nextRow()) {
-			if (columnIndicatingOptionalRow == null || columnIndicatingOptionalRow.getString(null) != null) {
+			if (columnIndicatingOptionalRow == null || !columnIndicatingOptionalRow.isEmpty()) {
 				readSingleRow();
 			}
 		}
@@ -84,12 +84,23 @@ public abstract class ExcelSheetParser {
 			this.optional = optional;
 		}
 
+		public ExcelColumn prefixed(String prefix) {
+			if (prefix == null || prefix.isEmpty()) {
+				return this;
+			}
+			return new ExcelColumn(prefix + name, optional);
+		}
+
 		public String getName() {
 			return name;
 		}
 
 		public boolean isOptional() {
 			return optional;
+		}
+
+		public boolean isEmpty() {
+			return getOptionalString().isEmpty();
 		}
 
 		public String getString(String defaultValue) {
